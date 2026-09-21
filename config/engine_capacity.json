@@ -1,40 +1,58 @@
 {
-  "schema_version": 1,
-  "target_generation": 10,
-  "policy": {
-    "append_only_ids": true,
+  "schema_version": 3,
+  "project": "GOLD",
+  "runtime": {
+    "platform": "Game Boy Advance",
+    "engine_family": "Generation III-derived",
+    "upstream": "rh-hideout/pokeemerald-expansion",
+    "ref": "75b806a3ab57a81ff1eb6179288981f0b3cc3050"
+  },
+  "future_policy": {
+    "target_generation": "10+",
     "guess_unreleased_content": false,
-    "zero_is_none": true,
-    "legacy_layout_is_not_runtime_contract": true
+    "append_only_ids": true,
+    "silent_id_truncation_allowed": false
   },
-  "master_id": {
-    "bits": 16,
-    "min_normal": 1,
-    "max_normal": 65535
+  "audited_dataset": {
+    "num_species": 1573,
+    "moves_count_all": 935,
+    "items_count": 874
   },
-  "registries": {
-    "species": { "bits": 16, "append_only": true },
-    "variety": { "bits": 16, "append_only": true },
-    "form": { "bits": 16, "append_only": true },
-    "move": { "bits": 16, "append_only": true },
-    "item": { "bits": 16, "append_only": true },
-    "ability": { "bits": 16, "append_only": true },
-    "type": { "bits": 16, "append_only": true },
-    "evolution_method": { "bits": 16, "append_only": true },
-    "resource": { "bits": 16, "append_only": true },
-    "feature": { "bits": 16, "append_only": true }
+  "persistent_boxpokemon": {
+    "size_bytes": 80,
+    "species_bits": 11,
+    "species_max": 2047,
+    "move_bits": 11,
+    "move_max": 2047,
+    "held_item_bits": 10,
+    "held_item_max": 1023,
+    "tera_type_bits": 5,
+    "pokeball_bits": 6,
+    "pokeball_max": 63
   },
-  "resource_directory": {
-    "resource_id_bits": 16,
-    "bank_field_bits": 16,
-    "address_field_bits": 16,
-    "mapper_agnostic": true
+  "storage": {
+    "boxes": 14,
+    "mons_per_box": 30,
+    "boxed_slots": 420,
+    "save_sector_bytes": 4096,
+    "pokemon_storage_sector_count": 9
   },
-  "save": {
-    "format": "GOLD_SAVE_V2",
-    "versioned_blocks": true,
-    "runtime_ids_are_master_ids": true,
-    "compact_dictionary_encoding_allowed": true,
-    "legacy_import_required": true
+  "phase_1_zero_size_growth": {
+    "held_item_bits": 16,
+    "held_item_max": 65535,
+    "pokeball_bits": 8,
+    "pokeball_max": 255,
+    "boxpokemon_size_change_bytes": 0
+  },
+  "phase_2_required": {
+    "species_runtime_bits": 16,
+    "move_runtime_bits": 16,
+    "persistent_encoding": "pending save-sector/serializer redesign",
+    "must_preserve_dual_save_recovery": true,
+    "must_migrate_existing_gba_saves": true
+  },
+  "original_gold_import": {
+    "profiles": "config/import/legacy_gold_save_profiles.json",
+    "runtime_dependency_on_gb_sram_layout": false
   }
 }

@@ -1,0 +1,39 @@
+{
+  "schema_version": 1,
+  "container": {
+    "cartridge_sram_bytes": 32768,
+    "sram_bank_bytes": 8192,
+    "observed_rtc_trailer_bytes": 44,
+    "rtc_trailer_is_cartridge_sram": false
+  },
+  "profiles": {
+    "gold_japan": {
+      "boxes": 9,
+      "mons_per_box": 30,
+      "box_length": 1354,
+      "box_length_hex": "0x54A",
+      "bank2_box_count": 6,
+      "bank2_used_bytes": 8124,
+      "bank2_remaining_bytes": 68
+    },
+    "gold_localized": {
+      "boxes": 14,
+      "mons_per_box": 20,
+      "box_length": 1104,
+      "box_length_hex": "0x450",
+      "bank2_box_count": 7,
+      "bank2_used_bytes": 7728,
+      "bank2_remaining_bytes": 464
+    }
+  },
+  "release_profile": {
+    "japan_v0": "gold_japan",
+    "japan_rev_a": "gold_japan",
+    "korea": "gold_localized",
+    "usa_europe": "gold_localized",
+    "germany": "gold_localized",
+    "france": "gold_localized",
+    "italy": "gold_localized",
+    "spain": "gold_localized"
+  }
+}

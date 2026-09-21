@@ -1,0 +1,64 @@
+{
+  "schema_version": 1,
+  "purpose": "release fingerprinting and import provenance; ROM binaries are not committed",
+  "roms": [
+    {
+      "id": "japan_v0",
+      "file": "Pocket Monsters Kin (Japan).gbc",
+      "sha1": "8814f1039450a5d3684b1389f588ccd7ee7c3436",
+      "sha256": "7cfeceae00737a1f0713c9ab0b3a9e6eb8d05ff6002eb81308072a6f85e385e7",
+      "bytes": 1048576,
+      "rom_banks": 64,
+      "cgb_flag": 128,
+      "sgb_flag": 3,
+      "cartridge_type": 16,
+      "rom_size_code": 5,
+      "ram_size_code": 3,
+      "destination_code": 0,
+      "version": 0,
+      "zero_banks": []
+    },
+    {
+      "id": "japan_rev_a",
+      "file": "Pocket Monsters Kin (Japan) (Rev A).gbc",
+      "sha1": "a222402235d484ee8e39f3f31bae57cf13daf585",
+      "sha256": "27a07a1d3faf9c6a0b1b60d5e88ee3a4159a751a47b4c46ab09f1202d52bac3e",
+      "bytes": 1048576,
+      "rom_banks": 64,
+      "cgb_flag": 128,
+      "sgb_flag": 3,
+      "cartridge_type": 16,
+      "rom_size_code": 5,
+      "ram_size_code": 3,
+      "destination_code": 0,
+      "version": 1,
+      "zero_banks": []
+    },
+    {
+      "id": "korea",
+      "file": "Pocket Monsters Geum (Korea).gbc",
+      "sha1": "c0ff3999e1093e1af59ef3eea3f1bfd7c1f18a65",
+      "sha256": "9c273e86e6120c6a038160ccb0153b8b20425b84fc08a496281c1d1bcac492f6",
+      "bytes": 2097152,
+      "rom_banks": 128,
+      "cgb_flag": 192,
+      "sgb_flag": 0,
+      "cartridge_type": 16,
+      "rom_size_code": 6,
+      "ram_size_code": 3,
+      "destination_code": 1,
+      "version": 0,
+      "zero_banks": [19,34,39,40,41,44,45,47,52,53,88,99,103,106,107,111,115,116,117,118,119,124,125,126]
+    },
+    {
+      "id": "usa_europe",
+      "file": "Pokemon - Gold Version (USA, Europe).gbc",
+      "sha1": "d8b8a3600a465308c9953dfa04f0081c05bdcb94",
+      "sha256": "fb0016d27b1e5374e1ec9fcad60e6628d8646103b5313ca683417f52b97e7e4e",
+      "bytes": 2097152,
+      "rom_banks": 128,
+      "zero_banks": [19,34,39,40,41,44,45,47,52,53,88,99,103,111,113,114,115,116,117,118,119,120,121,122,123,124,125,126]
+    }
+  ],
+  "common_zero_banks_2mib_all_measured_localized_releases": [19,34,40,41,44,45,47,52,53,99,103,111,115,116,117,118,119,124,125,126]
+}
