@@ -7,125 +7,121 @@ rh-hideout/pokeemerald-expansion
 75b806a3ab57a81ff1eb6179288981f0b3cc3050
 ```
 
-This audit is about **storage capacity**, not guessed Generation 10 content.
+This is a storage/API capacity project, not a prediction of unreleased content.
 
-## Measured current core
+## Current packed limits
 
 At the pinned commit:
 
-| Persistent field | Packed width | Max value | Current dataset |
+| Persistent field | Packed width | Max | Current audited registry |
 | --- | ---: | ---: | ---: |
-| BoxPokemon species | 11 bits | 2047 | NUM_SPECIES = 1573 |
-| BoxPokemon move | 11 bits each | 2047 | MOVES_COUNT_ALL = 935 |
-| BoxPokemon held item | 10 bits | 1023 | ITEMS_COUNT = 874 |
-| BoxPokemon tera type | 5 bits | 31 | core comment: 30 types |
-| BoxPokemon Poké Ball | 6 bits | 63 | n/a |
+| Species | 11 bits | 2047 | NUM_SPECIES = 1573 |
+| Move | 11 bits | 2047 | MOVES_COUNT_ALL = 935 |
+| Held Item | 10 bits | 1023 | ITEMS_COUNT = 874 |
+| Tera Type | 5 bits | 31 | retained |
+| Poké Ball | 6 bits | 63 | retained |
 
-The species namespace already contains forms and modern variants, so National Dex
-species count alone is not a valid capacity test.
+The core has 14 boxes x 30 slots = 420 boxed Pokémon and an 80-byte BoxPokemon.
 
-The closest current persistent-ID ceiling is held items: the highest current normal
-item is 873 and the 10-bit field ends at 1023.
+## Phase 1 — implemented patch
 
-## Storage geometry
+`0001-expand-boxmon-item-ball-capacity.patch` changes:
 
-The pinned core uses:
+- held Item: 10 -> 16 bits by consuming the adjacent 6 unused bits;
+- Poké Ball: 6 -> 8 bits by consuming the adjacent 2 unused bits.
 
-```text
-TOTAL_BOXES_COUNT = 14
-IN_BOX_COUNT      = 30
-boxed Pokémon     = 420
-sizeof(BoxPokemon)= 80 bytes at the audited layout
-```
+This causes **zero BoxPokemon size growth**.
 
-The box array alone is 33,600 bytes. The storage struct reaches approximately
-`0x8432` before the optional fusion storage that follows it.
+## Phase 2 — SaveBlock3 sidecar reserved
 
-Emerald's save system uses 4 KiB flash sectors and nine sectors for Pokémon storage.
-Growing every BoxPokemon by 16 bytes would cost:
+The pinned save format provides `SAVE_BLOCK_3_CHUNK_SIZE=116` bytes in each of
+14 sectors, so SaveBlock3 has a hard maximum of:
 
 ```text
-420 * 16 = 6,720 additional bytes
+116 * 14 = 1624 bytes
 ```
 
-That does not fit into the current Pokémon-storage sector budget without redesigning
-the save layout. Therefore "make every packed ID u16" is not a safe first patch.
+With the pinned default configuration, optional SaveBlock3 consumers are disabled
+(fake RTC, followers, first-time item-description flags, DexNav search levels), and
+`APRICORN_TREE_COUNT=0`. The always-present `dexNavChain` remains.
 
-## Phase 1: zero-size-growth expansion
-
-Two fields can be widened without changing `sizeof(BoxPokemon)`.
-
-### Held item
-
-Current:
-
-```c
-enum Item heldItem:10;
-u16 unused_02:6;
-```
-
-GOLD target:
-
-```c
-u16 heldItem;
-```
-
-The adjacent six unused bits are consumed. Persistent held-item capacity becomes
-0..65535 with no Pokémon save-size increase.
-
-### Poké Ball
-
-Current:
-
-```c
-u16 pokeball:6;
-u16 nickname12:8;
-u16 unused_0A:2;
-```
-
-GOLD target:
-
-```c
-u16 pokeball:8;
-u16 nickname12:8;
-```
-
-The two unused bits are consumed. Capacity rises from 63 to 255 with no size increase.
-
-The repository patch in
-`patches/pokeemerald-expansion/0001-expand-boxmon-item-ball-capacity.patch`
-implements this first safe step against the pinned core.
-
-## Phase 2: Species and Move
-
-Species and four move slots cannot all be widened to 16 bits in place without either:
-
-1. increasing BoxPokemon and reallocating save sectors; or
-2. defining a new compact persistent encoding while keeping a wider runtime identity.
-
-GOLD will not guess which future IDs are needed. Instead the new format must satisfy:
-
-- runtime Species/Move identifiers can reach at least 16 bits;
-- saved IDs remain append-only;
-- all 420 box slots remain representable;
-- dual-save recovery is preserved;
-- checksum/encryption migration is explicit;
-- old pokeemerald-expansion saves can be upgraded;
-- original Gold saves are imported through the separate Gen II decoder.
-
-No Gen 10 species/move counts are reserved before verified official data exists.
-
-## Capacity gates
-
-Build/import tooling must fail loudly before an ID exceeds a packed field. Silent
-truncation is forbidden.
-
-Current warning thresholds:
+To widen Species and four Move IDs in-place, GOLD plans to move these existing fields
+out of BoxPokemon:
 
 ```text
-species >= 1900   investigate before 2048
-moves   >= 1900   investigate before 2048
-items   >= 1000   Phase 1 patch is mandatory before 1024
+tera type               5 bits
+evolution tracker 1     5 bits
+evolution tracker 2     5 bits
+hyper-training flags    6 bits
+                       -------
+                       21 bits / persistent mon
 ```
 
-These thresholds are engineering alarms, not content predictions.
+Persistent slots are budgeted conservatively as:
+
+```text
+PC storage      420
+party             6
+daycare           2
+fusion storage    4
+                ---
+                432
+```
+
+Therefore:
+
+```text
+432 * 21 bits = 9072 bits = 1134 payload bytes
+sidecar header                         12 bytes
+                                      ----------
+sidecar total                        1146 bytes
+SaveBlock3 hard ceiling              1624 bytes
+remaining before other fields         478 bytes
+```
+
+`0002-reserve-saveblock3-boxmon-sidecar.patch` adds that versioned 1,146-byte
+sidecar and relies on upstream's existing compile-time SaveBlock3 size assertion to
+reject incompatible feature combinations.
+
+### Sidecar v1 bit layout
+
+Each logical 21-bit entry is:
+
+- bits 0..4: tera type
+- bits 5..9: evolution tracker 1
+- bits 10..14: evolution tracker 2
+- bits 15..20: six hyper-training flags
+
+The sidecar reservation is implemented now. **Species and Move fields are not widened
+until accessor/copy/migration hooks are connected**, so no save can silently lose the
+displaced metadata.
+
+## Runtime build path
+
+GOLD does not copy an untracked upstream snapshot into the repository.
+
+`scripts/prepare_runtime.sh`:
+
+1. clones/checks out the exact pinned upstream commit;
+2. hard-resets the generated runtime tree to that commit;
+3. applies GOLD patches in `patches/pokeemerald-expansion/series`;
+4. runs the capacity guard.
+
+`scripts/build_runtime.sh` then builds the patched core with `make all`.
+
+The GitHub Actions workflow `GOLD Gen10 Capacity` performs the same process on every
+relevant main-branch change.
+
+## Next implementation slice
+
+After the patched runtime build is green:
+
+1. add sidecar pack/unpack helpers;
+2. define stable persistent slot indices and copy/swap hooks;
+3. migrate tera/evolution/hyper metadata into the sidecar;
+4. widen BoxPokemon Species to 16 bits;
+5. widen all four Move IDs to 16 bits;
+6. add save-version migration tests;
+7. add explicit overflow tests above 2047.
+
+At no point is an unreleased Generation 10 species, move, item or mechanic invented.
