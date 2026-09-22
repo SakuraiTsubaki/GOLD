@@ -1,5 +1,5 @@
 {
-  "schema": 1,
+  "schema": 2,
   "project": "GOLD",
   "title": "ポケットモンスター 金",
   "originalGeneration": 2,
@@ -57,5 +57,17 @@
     }
   },
   "nativeSaveProfile": "JPN-GOLD-GBA",
-  "nativeSaveIsolation": true
+  "nativeSaveIsolation": true,
+  "generationSuperset": {
+    "repository": "SakuraiTsubaki/EMERALD",
+    "manifest": "manifests/generation-supersets.json",
+    "documentation": "docs/GENERATION_SUPERSET_MERGE.md",
+    "generationKey": "gen2",
+    "sourceProfile": "GOLD",
+    "mergePolicy": "union-preserve-variants",
+    "runtimeModes": [
+      "generation-superset",
+      "source-version-reproduction"
+    ]
+  }
 }
