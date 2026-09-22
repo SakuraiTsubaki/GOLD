@@ -1,0 +1,28 @@
+name: GOLD Original ROM Expansion
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "config/original_rom_expansion.json"
+      - "research/gold_release_matrix.json"
+      - "tools/expand_original_gold.py"
+      - "tools/validate_original_rom_expansion.py"
+      - ".github/workflows/original-rom-expansion.yml"
+  pull_request:
+    paths:
+      - "config/original_rom_expansion.json"
+      - "research/gold_release_matrix.json"
+      - "tools/expand_original_gold.py"
+      - "tools/validate_original_rom_expansion.py"
+  workflow_dispatch:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate metadata
+        run: python tools/validate_original_rom_expansion.py
+      - name: Compile tools
+        run: python -m py_compile tools/expand_original_gold.py tools/validate_original_rom_expansion.py

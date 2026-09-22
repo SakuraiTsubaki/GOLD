@@ -1,0 +1,57 @@
+{
+  "schema_version": 1,
+  "project": "GOLD",
+  "scope": "original-gbc-rom",
+  "target_generation": "10+",
+  "stage0": {
+    "status": "implemented-and-validated-on-all-8-provided-releases",
+    "mapper": "MBC30-class extended MBC3",
+    "cartridge_type_code": 16,
+    "rom_bytes": 4194304,
+    "rom_bank_bytes": 16384,
+    "rom_banks": 256,
+    "rom_size_code": 7,
+    "sram_bytes": 65536,
+    "sram_bank_bytes": 8192,
+    "sram_banks": 8,
+    "ram_size_code": 5,
+    "rtc_preserved": true,
+    "padding_byte": 255
+  },
+  "logical_ids": {
+    "bits": 16,
+    "max": 65535,
+    "append_only": true,
+    "zero_is_none": true,
+    "species": 16,
+    "variety": 16,
+    "form": 16,
+    "move": 16,
+    "item": 16,
+    "ability": 16,
+    "type": 16,
+    "evolution_method": 16,
+    "resource": 16,
+    "feature": 16
+  },
+  "save_extension": {
+    "legacy_sram_banks": [0, 1, 2, 3],
+    "extension_sram_banks": [4, 5, 6, 7],
+    "extension_bytes": 32768,
+    "rtc_trailer_is_not_sram": true,
+    "format": "GOLD_SAVE_V2"
+  },
+  "banking": {
+    "measured_rom_bank_switch_offset": 16,
+    "measured_rom_bank_switch_signature_hex": "e09fea0020c9",
+    "bank_number_width": 8,
+    "mbc30_new_rom_bank_range": "0x80..0xFF"
+  },
+  "future_mapper": {
+    "mbc5_8m": {
+      "rom_bytes": 8388608,
+      "status": "not-enabled",
+      "reason": "MBC5 has larger ROM capacity but no MBC3 RTC; requires a separate RTC replacement and 9-bit bank API before use"
+    }
+  }
+}

@@ -1,103 +1,26 @@
 {
-  "schema": 2,
+  "schema": 3,
   "project": "GOLD",
-  "title": "ポケットモンスター 金",
-  "originalGeneration": 2,
-  "targetPlatform": "Game Boy Advance",
-  "targetEngine": "Generation III-derived modern remake core",
-  "originalRepository": "SakuraiTsubaki/PocketMonsters-Kin-Disassembly",
-  "originalInputs": [
-    "Pocket Monsters Kin (Japan).gbc",
-    "Pocket Monsters Kin (Japan) (Rev A).gbc"
+  "title": "Pokemon Gold / Pocket Monsters Kin-Geum",
+  "platform": "Game Boy / Game Boy Color",
+  "runtime": "original Gold ROM engine expanded in place",
+  "gba_runtime": false,
+  "original_rom_expansion": true,
+  "supported_release_count": 8,
+  "supported_releases": [
+    "japan_v0",
+    "japan_rev_a",
+    "korea",
+    "usa_europe",
+    "germany",
+    "france",
+    "italy",
+    "spain"
   ],
-  "priority": [
-    "Japanese originals",
-    "revision fidelity",
-    "latest verified official Pokemon systems",
-    "GBA compatibility"
-  ],
-  "legacyGbGbcEngineWork": "research-only-not-runtime",
-  "romBinariesCommitted": false,
-  "japanSourceSurvey": {
-    "coordinationRepository": "SakuraiTsubaki/EMERALD",
-    "census": "manifests/japan-20-rom-census.csv",
-    "revisionSummary": "manifests/japan-revision-summary.json",
-    "survey": "research/japan-gen1-gen2-gen3-survey.md",
-    "scanner": "tools/scan_japan_rom_set.py",
-    "romCount": 20,
-    "generationCounts": {
-      "gen1": 9,
-      "gen2": 5,
-      "gen3": 6
-    }
-  },
-  "sharedResearch": {
-    "scriptSemantics": {
-      "repository": "SakuraiTsubaki/EMERALD",
-      "summary": "manifests/japan-script-semantic-summary.json",
-      "extraction": "manifests/japan-script-root-extraction.json",
-      "report": "research/japan-script-semantics-survey.md"
-    },
-    "battleLogic": {
-      "repository": "SakuraiTsubaki/EMERALD",
-      "matrix": "manifests/japan-battle-generation-matrix.csv",
-      "policy": "manifests/japan-battle-runtime-policy.json",
-      "report": "research/japan-battle-logic-survey.md"
-    },
-    "saveRtc": {
-      "repository": "SakuraiTsubaki/EMERALD",
-      "matrix": "manifests/japan-save-rtc-matrix.csv",
-      "policy": "manifests/remake-save-policy.json",
-      "report": "research/japan-save-rtc-survey.md"
-    },
-    "johtoMapDonors": {
-      "repository": "SakuraiTsubaki/EMERALD",
-      "donorCatalog": "manifests/hoenn-to-johto-map-donors.csv",
-      "mapPlan": "manifests/johto-gba-map-plan.csv",
-      "report": "research/hoenn-map-donor-survey.md",
-      "emeraldRef": "5eff78649e7170a877b961ef0b3da13b81a16038",
-      "role": "GBA map implementation reference only"
-    }
-  },
-  "nativeSaveProfile": "JPN-GOLD-GBA",
-  "nativeSaveIsolation": true,
-  "generationSuperset": {
-    "repository": "SakuraiTsubaki/EMERALD",
-    "manifest": "manifests/generation-supersets.json",
-    "documentation": "docs/GENERATION_SUPERSET_MERGE.md",
-    "generationKey": "gen2",
-    "sourceProfile": "GOLD",
-    "mergePolicy": "union-preserve-variants",
-    "runtimeModes": [
-      "generation-superset",
-      "source-version-reproduction"
-    ]
-  },
-  "mapConversion": {
-    "sourceTruth": "Japanese Kin map topology/events",
-    "johtoGbaDonor": "Ruby/Sapphire/Emerald, Emerald preferred",
-    "kantoGbaDonor": "FireRed/LeafGreen",
-    "hgssRole": "official later interpretation reference; not runtime base",
-    "geometryPolicy": "preserve source identity; donor layouts are grammar/reference, not coordinate replacements",
-    "firstVerticalSlice": [
-      "NEW_BARK_TOWN",
-      "ROUTE_29",
-      "CHERRYGROVE_CITY"
-    ],
-    "firstSliceManifest": "SakuraiTsubaki/EMERALD:manifests/johto-gba-first-slice.json",
-    "unitValidator": "SakuraiTsubaki/EMERALD:tools/validate_johto_gba_map_units.py",
-    "firstSliceReport": "SakuraiTsubaki/EMERALD:research/johto-gba-first-slice.md",
-    "sourceVisualPolicy": "GSC Johto graphics/metatiles are source truth; any Gen III donor is implementation reference only"
-  },
-  "expansionAuthority": {
-    "project": "GOLD",
-    "sourceEvidence": [
-      "original Gold ROMs",
-      "release-specific Gold SAV files",
-      "PocketMonsters-Kin-Disassembly"
-    ],
-    "contract": "config/engine_capacity.json",
-    "saveContract": "docs/SAVE_FORMAT_V2.md",
-    "externalGen3EnginesRole": "implementation/reference donor only; not capacity or ID authority"
-  }
+  "capacity_target": "mbc30_4m_64k_rtc",
+  "capacity_config": "config/original_rom_expansion.json",
+  "release_matrix": "research/gold_release_matrix.json",
+  "rom_binaries_committed": false,
+  "save_binaries_committed": false,
+  "future_content_policy": "verified official data only; never guess unreleased Generation 10 content"
 }

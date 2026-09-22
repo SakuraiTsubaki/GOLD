@@ -1,28 +1,34 @@
-# Remake Policy
+# Original-ROM Expansion Policy
 
-## Preserve from the original
+## Scope
 
-- 지역과 스토리의 핵심 구조
-- NPC와 이벤트의 의미 및 진행 조건
-- 작품별/버전별 고유 요소
-- 일본판 각 revision의 차이와 수정 이력
-- 원본 트레이너·야생·아이템·대사·맵의 출처 기록
+GOLD에서 현재 확장 대상은 GBA 리메이크가 아니라 **원본 Gold GBC ROM**이다.
 
-## Modernize to the latest verified official rules
+## Release policy
 
-- 포켓몬 종족 데이터와 타입
-- 특성
-- 기술/기술 효과와 물리·특수 분리
-- 진화 조건과 후대 진화형
-- 리전폼·리전진화·검증된 폼 시스템
-- 아이템 효과
-- 현대 전투 규칙과 육성/편의 기능
-- 최신 공식 명칭 체계
+일본판만을 구현 대상으로 삼지 않는다. Japan, Japan Rev A, Korea, USA/Europe,
+Germany, France, Italy, Spain 8개 릴리스 모두 first-class profile이다.
 
-## Engine boundary
+공통 패치가 가능하면 공통화하되 다음 항목은 release-specific evidence로 유지한다.
 
-최종 실행 대상은 GBA다. GB/GBC 원본 ROM 구조, mapper, SRAM 형식은 원본 분석·가져오기 근거로만 사용한다. 리메이크 런타임은 Generation III 계열의 현대화 코어를 사용한다.
+- ROM/SAVE hashes
+- ROM 크기와 빈 bank
+- bank-switch / OpenSRAM 주소
+- 지역별 text/font/data layout
+- SAVE box geometry
+- revision-specific code differences
+
+## Expansion policy
+
+Stage 0은 RTC를 유지하면서 MBC30-class 4 MiB ROM / 64 KiB SRAM으로 확장한다.
+
+Stage 1 이후에는 원본의 8-bit Species/Move/Item ID를 compatibility representation으로
+남기고 게임 로직의 master namespace를 16-bit로 확장한다.
+
+SAVE banks 0..3은 원본 compatibility image로 보존한다.
+banks 4..7은 versioned extension directory와 later-generation persistent data에 쓴다.
 
 ## Future-content rule
 
-공개·검증된 공식 데이터만 반영한다. 미출시 세대의 종·기술·아이템·특성·메커니즘은 이름이나 수량을 추측해서 넣지 않는다.
+10세대 대비는 capacity와 schema를 미리 넓힌다는 뜻이다.
+미출시 종·기술·아이템·특성·메커니즘을 추측하여 채우지 않는다.

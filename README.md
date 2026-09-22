@@ -1,27 +1,44 @@
 # GOLD
 
-**ポケットモンスター 金**을 원전으로 조사하고, 10세대 이후까지 버틸 수 있는 확장 구조를 구축하는 저장소입니다.
+원본 **Pokémon Gold / Pocket Monsters Gold** GBC ROM을 직접 확장해
+10세대 이후 데이터 증가를 받아들일 수 있는 구조를 만드는 저장소입니다.
 
-## 현재 정본 방향
+## 범위
 
-- 일본판 원작과 확인된 revision을 Master Reference로 전수조사합니다.
-- ROM과 SAVE를 따로 실측하고 release별 차이를 보존합니다.
-- 10세대 대비 확장은 **GOLD 자체의 16-bit master ID, Save V2, resource/ROM-bank abstraction**을 기준으로 진행합니다.
-- 미출시·미검증 세대 콘텐츠는 추측하지 않습니다.
-- 최종 GBA 리메이크 구현에서 다른 3세대 엔진/맵/자산을 참고할 수 있지만, 그것들이 GOLD의 용량·ID·세이브 정본이 되지는 않습니다.
+GBA/Emerald 기반 확장이 아닙니다. 아래 8개 원본 ROM + SAVE가 모두 작업 대상입니다.
 
-## 원본 및 조사
+- Japan
+- Japan Rev A
+- Korea
+- USA/Europe
+- Germany
+- France
+- Italy
+- Spain
 
-- 원본 조사: `SakuraiTsubaki/PocketMonsters-Kin-Disassembly`
-- 일본판 원본: `Pocket Monsters Kin (Japan).gbc`, `Pocket Monsters Kin (Japan) (Rev A).gbc`
-- 지역별 Gold ROM/SAV는 독립 프로필로 유지합니다.
+각 릴리스의 원본 주소와 차이를 보존하면서 공통 확장 구조를 적용합니다.
 
-## 확장 문서
+## 현재 구현
 
-- `PROJECT.md` — 현재 프로젝트 방향
-- `config/engine_capacity.json` — 16-bit master ID / Save V2 용량 계약
-- `docs/GEN10_EXPANSION_ARCHITECTURE.md` — 10세대 대비 확장 구조
-- `docs/SAVE_FORMAT_V2.md` — GOLD 자체 Save V2 계약
-- `research/ROM_SAVE_BASELINE.md` — 실제 Gold ROM/SAV 실측
+Stage 0 original-ROM capacity expansion:
 
-ROM 바이너리는 GitHub에 커밋하지 않습니다.
+- MBC3 2 MiB / 32 KiB 한계를 MBC30-class 4 MiB / 64 KiB로 확장
+- RTC 유지
+- 일본판 1 MiB와 지역판 2 MiB를 모두 4 MiB target으로 정규화
+- SAVE의 기존 32 KiB를 그대로 보존하고 추가 SRAM 32 KiB를 banks 4..7로 확보
+- emulator RTC trailer 44 bytes는 SRAM과 분리하여 그대로 보존
+- 한국판 OpenSRAM의 4-bank guard를 8-bank guard로 릴리스 전용 수정
+- 8개 ROM 모두 SHA-1 fingerprint로 식별하며 모르는 ROM은 변환 거부
+
+도구:
+
+```sh
+python tools/expand_original_gold.py rom input.gbc output.gbc
+python tools/expand_original_gold.py save input.sav output.sav
+python tools/validate_original_rom_expansion.py
+```
+
+실제 ROM/SAVE 전수조사 결과는 `research/gold_release_matrix.json`과
+`research/mbc30_expansion_validation.json`에 기록합니다.
+
+ROM/SAV 바이너리는 GitHub에 커밋하지 않습니다.
