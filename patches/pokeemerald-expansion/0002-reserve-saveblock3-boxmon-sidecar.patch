@@ -73,7 +73,7 @@ new file mode 100644
 diff --git a/include/global.h b/include/global.h
 --- a/include/global.h
 +++ b/include/global.h
-@@ -24,8 +24,9 @@
+@@ -24,7 +24,8 @@
  #include "constants/trainer_hill.h"
  #include "constants/trainer_tower.h"
  #include "constants/items.h"
