@@ -1,10 +1,10 @@
 # GOLD original ROM / save baseline
 
-Status: measured source/import evidence for the GBA remake.
+Status: measured source evidence for GOLD-native expansion.
 
-The files measured here are original Gold inputs. They are **not** the final GOLD
-runtime format. GOLD imports their behavior and data into the Generation III-derived
-GBA runtime defined by `PROJECT.md`.
+The files measured here are original Gold inputs. ROM and SAVE are separate evidence
+layers. They define release fingerprints, original limits and compatibility requirements;
+they do not make another game's engine the GOLD capacity authority.
 
 ## ROM measurements
 
@@ -25,8 +25,8 @@ all measured 2 MiB releases:
 67 6F 73 74 75 76 77 7C 7D 7E
 ```
 
-This ROM-bank information is provenance/reverse-engineering evidence only. The final
-remake runs on GBA and does not inherit the MBC3 address space.
+These measurements are used to design GOLD's own resource-directory and mapper/storage
+abstractions. They are not replaced by a Generation III save layout.
 
 ## Save container measurement
 
@@ -40,11 +40,9 @@ Every supplied Gold save file is exactly:
 
 The 44-byte trailer parses as eleven little-endian u32 values: five live MBC3 RTC
 register values, five latched values, and one timestamp. It is emulator/transport
-metadata outside cartridge SRAM. Import code must split it from the first 32 KiB.
+metadata outside cartridge SRAM.
 
 ## Japanese save profile
-
-The Japanese saves use the compact Japanese PC layout:
 
 ```text
 boxes          9
@@ -54,8 +52,6 @@ SRAM bank 2    6 boxes = 0x1FBC bytes
 bank 2 spare   0x0044 bytes
 SRAM bank 3    remaining 3 boxes + other data
 ```
-
-The `0x54A` stride and boundaries are visible in the supplied saves.
 
 ## Localized save profile
 
@@ -70,25 +66,23 @@ bank 2 spare   0x01D0 bytes
 SRAM bank 3    remaining 7 boxes + other data
 ```
 
-Therefore there is no single byte-identical "Gold legacy save layout". GOLD must select
-a release profile before decoding PC storage.
+Therefore there is no single byte-identical Gold save layout. The decoder selects a
+release profile before interpreting PC storage.
 
-## Import boundary
-
-The remake load/import path is:
+## Expansion boundary
 
 ```text
-original ROM/save
-  -> release fingerprint
-  -> release-specific Gold decoder
-  -> canonical GOLD import record
-  -> GBA/Generation III-derived runtime
+original Gold ROM
+  -> release fingerprint / disassembly evidence
+  -> canonical GOLD registries
+
+original Gold SAVE
+  -> release-specific decoder
+  -> canonical GOLD save model
+  -> GOLD_SAVE_V2
 ```
 
-Do not expose original MBC3 SRAM addresses or box strides to gameplay code.
+Generation III / Emerald-derived projects may later be consulted for GBA implementation,
+but they do not define GOLD's master IDs or Save V2 capacity.
 
-## Consequence for Generation 10 readiness
-
-The original Gold limits are useful for faithful import, but they are **not** the
-capacity target. Capacity work belongs in the pinned GBA core. See
-`docs/GBA_GEN10_CAPACITY.md`.
+See `docs/GEN10_EXPANSION_ARCHITECTURE.md` and `docs/SAVE_FORMAT_V2.md`.

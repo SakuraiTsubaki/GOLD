@@ -1,55 +1,161 @@
-# GOLD Generation 10+ expansion architecture
+# Generation 10-ready expansion architecture
 
-Status: active GBA remake architecture.
+Status: **ACTIVE — Phase 0**
 
-## Boundary
+This document defines GOLD's expansion contract before game-source import.
 
-GOLD is a Generation III-derived **GBA remake**. Original Game Boy / Game Boy Color
-ROM banks, MBC3 mapper behavior and SRAM offsets are source-analysis/import concerns,
-not the final runtime architecture.
+## 1. Goal
 
-The original binaries are measured first because they define what must be faithfully
-imported. Runtime expansion is then performed against the pinned
-`pokeemerald-expansion` core.
+Generation 10 readiness means **capacity and architecture readiness**, not guessing
+unreleased content.
 
-## No guessed Generation 10 data
+GOLD must accept verified future records without renumbering older data or replacing
+the save/resource architecture again.
 
-"Generation 10-ready" means the storage/API design must not require a rewrite merely
-because verified official registries grow. It does not mean inventing unreleased
-species, moves, items, forms, abilities or mechanics.
+## 2. Master ID rule
 
-## Current hard limits
+Every registry that can realistically grow across generations uses a 16-bit master ID.
 
-The pinned core stores BoxPokemon fields more narrowly than their runtime enums:
+| Registry | Runtime width | Reserved zero |
+| --- | ---: | --- |
+| Species | 16-bit | NONE |
+| Variety / battle profile | 16-bit | NONE |
+| Form / appearance | 16-bit | NONE |
+| Move | 16-bit | NONE |
+| Item | 16-bit | NONE |
+| Ability | 16-bit | NONE |
+| Type | 16-bit | NONE |
+| Evolution method | 16-bit | NONE |
+| Resource | 16-bit | NONE |
+| Feature / mechanic | 16-bit | NONE |
 
-- Species: 11 bits (0..2047)
-- each Move: 11 bits (0..2047)
-- held Item: 10 bits (0..1023)
-- Tera Type: 5 bits
-- Poké Ball: 6 bits
+Valid normal ID space is `1..65535`.
 
-Current audited registries are `NUM_SPECIES=1573`,
-`MOVES_COUNT_ALL=935`, and `ITEMS_COUNT=874`.
+The width is an engine contract, not a promise that every ID will be populated.
 
-## Expansion order
+## 3. Append-only namespace
 
-1. **No-size-growth fields first.** Consume existing unused bits to make held Item
-   16-bit and Poké Ball 8-bit without changing BoxPokemon size.
-2. **Guard every packed field.** Builds/importers must fail before silent truncation.
-3. **Species/Move Save V2.** Design a persistent encoding with 16-bit runtime IDs while
-   preserving all 420 box slots and dual-save recovery.
-4. **Migrate, do not reinterpret.** Existing Generation III-derived saves need an
-   explicit versioned migration path.
-5. **Original Gold import stays separate.** Japanese 9x30 and localized 14x20 save
-   profiles decode into canonical records before entering the GBA runtime.
+Registries are append-only.
 
-See `docs/GBA_GEN10_CAPACITY.md` for the measured storage arithmetic.
+- Existing IDs never move when a new generation is imported.
+- Deletions become tombstones/aliases when compatibility requires them.
+- Generation boundaries are metadata, not numeric hard partitions.
+- No fixed "Generation 10 starts at X" constant is created before verified data exists.
 
-## Why not widen everything immediately?
+For Species, official National Pokédex numbers are preserved whenever the source data
+has such an identity. EGG is not a Species ID.
 
-At the audited layout BoxPokemon is 80 bytes and there are 420 boxed slots. If a
-redesign raises the record to 96 bytes, boxes alone grow by 6,720 bytes. Pokémon
-storage currently occupies nine 4 KiB save sectors, so record growth must be solved
-together with sector allocation, checksums, encryption and save migration.
+## 4. Species, variety, and form are separate
 
-GOLD therefore treats runtime ID width and persistent encoding as separate contracts.
+GOLD uses three layers:
+
+```text
+Species
+  -> Variety / battle profile
+       -> Form / appearance
+```
+
+**Species** is the stable creature identity.
+
+**Variety** carries battle-relevant variation such as base stats, type combinations,
+ability sets, or rules that differ between regional/alternate battle profiles.
+
+**Form** describes selectable or derived appearance/state records. A form may point to
+a variety, graphics, palette, cry/resource overrides, and transition rules.
+
+This prevents a future form mechanic from consuming or renumbering Species IDs.
+
+## 5. Moves, items, abilities, and types
+
+Gen II's original 8-bit namespaces are not retained as the master representation.
+
+All engine APIs that cross subsystem boundaries must exchange 16-bit master IDs.
+A subsystem may use a compact local dictionary internally, but it must decode to the
+same master ID before game logic uses the value.
+
+This rule specifically prevents the old failure mode where Species is widened but
+Move/Item later force a second save-format rewrite.
+
+## 6. Save architecture
+
+Runtime width and storage width are separate concerns.
+
+GOLD Save V2 uses:
+
+- a versioned header;
+- feature flags;
+- extension blocks;
+- per-block lengths and checksums;
+- dictionary/side-table encoding where it saves SRAM;
+- a legacy import path rather than pretending a modern record is still an untouched
+  Gen II BoxMon.
+
+The decoded in-memory representation always exposes 16-bit master IDs.
+
+See `SAVE_FORMAT_V2.md`.
+
+## 7. Resource and ROM-bank abstraction
+
+Game code must not bake a content table's physical ROM bank into gameplay logic.
+
+Use:
+
+```text
+ResourceId (u16)
+  -> ResourceDirectory
+       -> mapper-specific bank/address
+```
+
+The resource directory accepts a 16-bit bank field even when the first mapper target
+uses fewer bank bits. This allows a later ROM/mapper expansion to replace the mapper
+backend instead of rewriting every content consumer.
+
+The mapper choice is therefore a build target, not an identity-system limit.
+
+## 8. Feature registry for future mechanics
+
+Unknown future mechanics are represented by a feature registry and data-driven
+descriptors.
+
+Examples of subsystems that may attach feature data:
+
+- battle transformations;
+- form transitions;
+- field actions;
+- encounter rules;
+- evolution methods;
+- held-item effects;
+- move behavior flags;
+- save blocks.
+
+Do not reserve guessed Generation 10 mechanic names or numeric IDs.
+
+## 9. Compatibility layers
+
+GOLD distinguishes three formats:
+
+1. **Legacy source format** — original Gold structures and 8-bit fields.
+2. **Canonical runtime format** — 16-bit IDs and modern extensible records.
+3. **Serialized Save V2 format** — compact/versioned representation.
+
+Importers perform legacy -> canonical conversion.
+Serializers perform canonical <-> Save V2 conversion.
+
+Gameplay code should not depend on legacy byte layouts.
+
+## 10. Phase order
+
+Phase 0 is complete when the capacity contract, ID include, save contract, validator,
+and mapper-independent resource contract exist.
+
+Next phases:
+
+1. import/verify the Japanese Gold baseline;
+2. establish canonical registry manifests;
+3. convert Species/Move/Item accessors to 16-bit-safe APIs;
+4. introduce generic Variety/Form access;
+5. introduce Save V2 serializer/importer;
+6. route graphics/text/audio through the resource directory;
+7. append verified later-generation datasets.
+
+The key rule is simple: **expand the architecture first; populate it second.**

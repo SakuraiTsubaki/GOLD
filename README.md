@@ -1,28 +1,27 @@
 # GOLD
 
-**ポケットモンスター 金** (Generation II)를 **Game Boy Advance / Generation III 계열 기반의 현대화 리메이크**로 재구축하는 저장소입니다.
+**ポケットモンスター 金**을 원전으로 조사하고, 10세대 이후까지 버틸 수 있는 확장 구조를 구축하는 저장소입니다.
 
 ## 현재 정본 방향
 
-- 일본판 원작과 모든 확인된 revision을 원전으로 전수조사합니다.
-- 원작의 지역, 스토리, 이벤트, NPC, 버전 고유 요소는 보존합니다.
-- 포켓몬/타입/특성/기술/진화/폼/아이템/전투·육성 규칙은 현재 검증 가능한 최신 공식 기준으로 현대화합니다.
-- 최종 실행 대상은 **GBA**입니다.
-- GB/GBC mapper, SRAM, 원본 주소 구조는 원본 분석 자료로 보존하지만 최종 런타임 엔진으로 사용하지 않습니다.
+- 일본판 원작과 확인된 revision을 Master Reference로 전수조사합니다.
+- ROM과 SAVE를 따로 실측하고 release별 차이를 보존합니다.
+- 10세대 대비 확장은 **GOLD 자체의 16-bit master ID, Save V2, resource/ROM-bank abstraction**을 기준으로 진행합니다.
 - 미출시·미검증 세대 콘텐츠는 추측하지 않습니다.
+- 최종 GBA 리메이크 구현에서 다른 3세대 엔진/맵/자산을 참고할 수 있지만, 그것들이 GOLD의 용량·ID·세이브 정본이 되지는 않습니다.
 
-## 기반
+## 원본 및 조사
 
 - 원본 조사: `SakuraiTsubaki/PocketMonsters-Kin-Disassembly`
-- 공통 현대화 연구: `SakuraiTsubaki/EMERALD`
-- 현대 코어 기준: `rh-hideout/pokeemerald-expansion@75b806a3ab57a81ff1eb6179288981f0b3cc3050`
+- 일본판 원본: `Pocket Monsters Kin (Japan).gbc`, `Pocket Monsters Kin (Japan) (Rev A).gbc`
+- 지역별 Gold ROM/SAV는 독립 프로필로 유지합니다.
 
-## 문서
+## 확장 문서
 
-- `PROJECT.md` — 현재 프로젝트 방향의 정본
-- `config/remake.json` — 기계 판독 가능한 작품/엔진/원본 기준
-- `docs/REMAKE_POLICY.md` — 원작 보존과 최신화 정책
-
-저장소에 남아 있는 이전 확장 설계 문서와 도구는 삭제하지 않습니다. 원본 구조·세이브·ID·용량 연구 자료로 보존하며, GBA 리메이크에 필요한 내용만 새 런타임 설계로 옮깁니다.
+- `PROJECT.md` — 현재 프로젝트 방향
+- `config/engine_capacity.json` — 16-bit master ID / Save V2 용량 계약
+- `docs/GEN10_EXPANSION_ARCHITECTURE.md` — 10세대 대비 확장 구조
+- `docs/SAVE_FORMAT_V2.md` — GOLD 자체 Save V2 계약
+- `research/ROM_SAVE_BASELINE.md` — 실제 Gold ROM/SAV 실측
 
 ROM 바이너리는 GitHub에 커밋하지 않습니다.

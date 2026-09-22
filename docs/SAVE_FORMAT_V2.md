@@ -1,57 +1,82 @@
-# GOLD save migration contract
+# GOLD Save Format V2 contract
 
-Status: active design boundary.
+Status: design contract for implementation.
 
-There are **two unrelated save formats** involved in GOLD and they must not be
-conflated.
+## Goals
 
-## 1. Original Gold source saves
+- Decode every extensible identity to a 16-bit master ID.
+- Keep future additions appendable.
+- Avoid making the legacy 32-byte BoxMon layout the permanent modern schema.
+- Permit compact SRAM encoding without leaking compact IDs into gameplay logic.
+- Detect incompatible or corrupted extension blocks.
 
-These are import inputs from Generation II.
+## Header
 
-Measured supplied files contain:
+A Save V2 implementation must carry at least:
 
 ```text
-0x8000 cartridge SRAM
-0x002C observed RTC trailer
+magic
+format_version
+schema_version
+feature_flags
+directory_offset
+directory_count
+payload_checksum
 ```
 
-Japanese and localized releases use different PC storage geometry:
+Exact byte offsets are assigned when the source save layout is imported and measured.
 
-- Japan: 9 boxes x 30, stride 0x54A
-- Korean/western: 14 boxes x 20, stride 0x450
+## Extension directory
 
-The loader selects a legacy profile, decodes it, then produces canonical import
-records. The RTC trailer is not free SRAM.
+Each extension block is described by:
 
-## 2. GOLD GBA runtime saves
+```text
+block_type      u16
+block_version   u16
+offset          u16/u24 build-dependent
+length          u16
+checksum        u16
+flags           u16
+```
 
-The final remake uses the Generation III-derived GBA save architecture from the pinned
-pokeemerald-expansion core: 4 KiB flash sectors, two recovery slots, and dedicated
-Pokémon-storage sectors.
+Unknown optional blocks are skipped by length.
+Unknown required blocks make the save incompatible instead of being silently ignored.
 
-The current packed BoxPokemon format is an implementation input, not a permanent
-future-generation limit.
+## Pokémon identity
 
-## Phase 1
+The canonical record exposes:
 
-Held Item 10 -> 16 bits and Poké Ball 6 -> 8 bits consume existing unused bits and do
-not change BoxPokemon size or save-sector allocation.
+```text
+species_id      u16
+variety_id      u16
+form_id         u16
+held_item_id    u16
+move_id[4]      u16 each
+ability_id      u16
+```
 
-## Phase 2 / Save V2
+Nature, modern IV/EV data, ribbons/marks, origin metadata, and later mechanics live in
+versioned blocks or canonical fields as their source implementations are verified.
 
-Species and Move persistent IDs require a versioned storage migration because simply
-growing every BoxPokemon can overflow the current storage-sector budget.
+## Compact SRAM encoding
 
-Save V2 requirements:
+Serialized records may replace repeated 16-bit IDs with local dictionary indices.
 
-- canonical Species and Move runtime IDs at least 16 bits;
-- all 420 boxed slots preserved;
-- dual-save corruption recovery preserved;
-- checksums/encryption explicitly versioned;
-- old GBA GOLD saves migratable;
-- original Gen II Gold saves imported through their own decoder;
-- unknown future official content can append IDs without renumbering existing data;
-- no silent truncation.
+Rules:
 
-The physical encoding is intentionally not frozen until sector-budget tests pass.
+1. dictionary entries map to 16-bit master IDs;
+2. index 0 is NONE unless a block explicitly defines otherwise;
+3. dictionaries are save-local and never become global engine IDs;
+4. loading always resolves to canonical master IDs;
+5. dictionary overflow falls back to a wider block version rather than renumbering data.
+
+## Legacy import
+
+Original Gold saves are treated as import sources.
+
+Legacy 8-bit Species/Move/Item values are translated into canonical IDs through an
+explicit compatibility table. Legacy sentinels such as EGG are translated to state
+flags, not retained as fake Species IDs.
+
+Save V2 is allowed to differ physically from the original save layout. Compatibility
+is provided by import/export code, not by freezing the engine to 1999-era field widths.
