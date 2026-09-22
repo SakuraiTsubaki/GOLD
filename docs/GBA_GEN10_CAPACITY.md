@@ -112,16 +112,19 @@ GOLD does not copy an untracked upstream snapshot into the repository.
 The GitHub Actions workflow `GOLD Gen10 Capacity` performs the same process on every
 relevant main-branch change.
 
+## Runtime validation
+
+The pinned runtime plus patches 0001 and 0002 builds successfully with `make all` in the GOLD Gen10 Capacity workflow.
+
+Patch 0003 adds the sidecar pack/unpack API, payload CRC, bounds checks, and keeps the packed sidecar at the front of SaveBlock3 so its multi-byte header starts aligned.
+
 ## Next implementation slice
 
-After the patched runtime build is green:
-
-1. add sidecar pack/unpack helpers;
-2. define stable persistent slot indices and copy/swap hooks;
-3. migrate tera/evolution/hyper metadata into the sidecar;
-4. widen BoxPokemon Species to 16 bits;
-5. widen all four Move IDs to 16 bits;
-6. add save-version migration tests;
-7. add explicit overflow tests above 2047.
+1. define stable persistent slot indices and copy/swap hooks;
+2. migrate tera/evolution/hyper metadata into the sidecar;
+3. widen BoxPokemon Species to 16 bits;
+4. widen all four Move IDs to 16 bits;
+5. add save-version migration tests;
+6. add explicit overflow tests above 2047.
 
 At no point is an unreleased Generation 10 species, move, item or mechanic invented.
