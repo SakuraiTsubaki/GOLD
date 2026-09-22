@@ -10,7 +10,8 @@ NUM_SUBSTRUCT_BYTES and sizeof(struct BoxPokemon) remain unchanged.
 diff --git a/include/pokemon.h b/include/pokemon.h
 --- a/include/pokemon.h
 +++ b/include/pokemon.h
-@@ -117,8 +117,7 @@ struct PokemonSubstruct0
+@@ -132,15 +132,13 @@
+ struct PokemonSubstruct0
  {
      enum Species species:11; // 2047 species.
      enum Type teraType:5; // 30 types.
@@ -20,7 +21,6 @@ diff --git a/include/pokemon.h b/include/pokemon.h
      u32 experience:21;
      u32 nickname11:8; // 11th character of nickname.
      u32 unused_04:3;
-@@ -126,9 +125,8 @@ struct PokemonSubstruct0
      u8 ppBonuses;
      u8 friendship;
 -    u16 pokeball:6; // 63 balls.

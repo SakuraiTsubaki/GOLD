@@ -14,7 +14,7 @@ Per persistent mon, the planned displaced metadata is 21 bits:
 - hyper-training flags: 6
 
 432 persistent slots * 21 bits = 9072 bits = 1134 bytes.
-The sidecar header is 12 bytes, for a total of 1146 bytes.
+The packed sidecar header is 12 bytes, for a total of 1146 bytes.
 
 The upstream SaveBlock3 compile-time size assertion remains authoritative and will
 fail the build if optional features plus this sidecar exceed 1624 bytes.
@@ -23,7 +23,7 @@ diff --git a/include/gold_boxmon_sidecar.h b/include/gold_boxmon_sidecar.h
 new file mode 100644
 --- /dev/null
 +++ b/include/gold_boxmon_sidecar.h
-@@ -0,0 +1,42 @@
+@@ -0,0 +1,46 @@
 +#ifndef GUARD_GOLD_BOXMON_SIDECAR_H
 +#define GUARD_GOLD_BOXMON_SIDECAR_H
 +
@@ -67,13 +67,13 @@ new file mode 100644
 +    u16 payloadCrc;
 +    u16 flags;
 +    u8 payload[GOLD_BOXMON_AUX_PAYLOAD_BYTES];
-+};
++} __attribute__((packed));
 +
 +#endif // GUARD_GOLD_BOXMON_SIDECAR_H
 diff --git a/include/global.h b/include/global.h
 --- a/include/global.h
 +++ b/include/global.h
-@@ -21,6 +21,7 @@
+@@ -24,8 +24,9 @@
  #include "constants/trainer_hill.h"
  #include "constants/trainer_tower.h"
  #include "constants/items.h"
@@ -81,7 +81,9 @@ diff --git a/include/global.h b/include/global.h
  #include "constants/moves.h"
  #include "config/save.h"
  
-@@ -1268,6 +1269,7 @@ struct SaveBlock3
+ // Prevent cross-jump optimization.
+@@ -271,7 +272,8 @@
+     u8 dexNavChain;
  #if APRICORN_TREE_COUNT > 0
      u8 apricornTrees[NUM_APRICORN_TREE_BYTES];
  #endif
@@ -92,8 +94,9 @@ diff --git a/include/global.h b/include/global.h
 diff --git a/src/save.c b/src/save.c
 --- a/src/save.c
 +++ b/src/save.c
-@@ -128,6 +128,8 @@ static void CopyFromSaveBlock3(u32, struct SaveSector *);
- 
+@@ -78,6 +78,8 @@
+ // These will produce an error if a save struct is larger than the space
+ // alloted for it in the flash.
  STATIC_ASSERT(sizeof(struct SaveBlock3) <= SAVE_BLOCK_3_CHUNK_SIZE * NUM_SECTORS_PER_SLOT, SaveBlock3FreeSpace);
 +STATIC_ASSERT(sizeof(struct GoldBoxMonSidecar) == 1146, GoldBoxMonSidecarSize);
 +STATIC_ASSERT(GOLD_BOXMON_AUX_PAYLOAD_BYTES == 1134, GoldBoxMonSidecarPayloadSize);
