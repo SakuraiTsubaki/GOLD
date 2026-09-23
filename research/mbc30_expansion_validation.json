@@ -1,6 +1,6 @@
 {
-  "schema_version": 1,
-  "validation": "tools/expand_original_gold.py executed against all 8 provided ROM/SAV pairs",
+  "schema_version": 2,
+  "validation": "tools/expand_original_gold.py executed against all 8 provided ROM/SAV pairs after GOLDREG + GOLD_SAVE_V2 Stage 1 initialization",
   "boot_tested": false,
   "rom_transform": {
     "target_bytes": 4194304,
@@ -8,22 +8,31 @@
     "rom_size_code": 7,
     "ram_size_code": 5,
     "cartridge_type": 16,
-    "checksums_verified": true
+    "checksums_verified": true,
+    "registry_bank": 128,
+    "registry_physical_offset": 2097152,
+    "registry_magic": "GOLDREG",
+    "registry_seed_tables": ["BaseData", "Moves", "ItemAttributes"]
   },
   "save_transform": {
     "target_sram_bytes": 65536,
     "rtc_trailer_bytes": 44,
     "container_bytes_with_trailer": 65580,
-    "legacy_first_32768_bytes_preserved": true
+    "legacy_first_32768_bytes_preserved": true,
+    "save_v2_magic": "GOLDV2",
+    "mon_id_high_slots": 288,
+    "mon_id_high_bytes_per_slot": 6,
+    "mon_id_high_payload_bytes": 1728,
+    "inventory_item_high_payload_bytes": 107
   },
   "results": [
-    {"id":"japan_v0","rom_sha1":"cd499bb14c34ec2b91926f7d1007e87ea366b0d1","rom_sha256":"23d49aa848d60a33940e9648dbdf3109025e38bb73686adc845784fc85fac027","save_sha1":"d898005d11d225dd708c490f37952483f7393fd8","save_sha256":"25148ef235b2b81833ac040dfd04827f8008244fb94e9d7553f428f9a0bf9994"},
-    {"id":"japan_rev_a","rom_sha1":"ea4abf723c7bcd36e8c4ab8a0020fd1e4be850f5","rom_sha256":"f26b920982466563598a1f293061e3063657e7d5a565f213097dea24c8df2f97","save_sha1":"90ab474ea16813e0e7f3f097b2cb8f6324483b8c","save_sha256":"aedc32e7e382736cf11f5a971b5cd076861e87658bd19acac812ff3de4451656"},
-    {"id":"korea","rom_sha1":"8af40c338fb12af74beeca2a1f74f5f930d4c4eb","rom_sha256":"c641bbd21435f7197db0dcc11764f0043bdcd2d437e7fb3f7b8f39e8930655a3","save_sha1":"a530aa592df0499c15ec388a5fd00920adf82bde","save_sha256":"fb5277253c23b0b5ebbb1126a5cc356721d2681878245102b346cb1fc37c5a8b"},
-    {"id":"usa_europe","rom_sha1":"c6c54f6e9e39f95848438143941cac9323865790","rom_sha256":"4d472238fb968e09a555a85879123f7e1166e7bfe61963e565e9fe3c9320dccf","save_sha1":"926697ecbe41063cd4eb8d549b5a9c06df1f06c7","save_sha256":"b21c3584b469a9ec4c425f6be91d665875e54101ae7c1d97715e27f636d8d761"},
-    {"id":"germany","rom_sha1":"ffd2b86563d8dd5ebd90832ec4353ec8f8ac5717","rom_sha256":"3434e0f9da590dda85ae01a143de13c9b1e75ebf2a66cab899bc71ef1aeedd12","save_sha1":"3a23687f7111fd95ee2544bb4d722337765b16e2","save_sha256":"1e862933a2b3b526916cb07d9c168859c008f91a438cca5a59b0f58449cd21c0"},
-    {"id":"france","rom_sha1":"70f5e2220c7f226c0bfdbb5d8f9b8f361e1a8b9f","rom_sha256":"e4c654be6fcd876792b8da27b6005e763c85ab697f0c4dd8fff3347ee200dc32","save_sha1":"387aa222216887a2858c91c6575f4eb7e1703246","save_sha256":"bfefda31c5d86d2886bc2b7c177df50ae5b8ee9b45203459cb6611388fc36e9f"},
-    {"id":"italy","rom_sha1":"d77797a295e68f335a1f4bcb05ef9886688cbe08","rom_sha256":"05857e7cc5b448dea378d5f3ec5119020bbed83cc40f431e5cb4bb7c5cdae1dc","save_sha1":"5f413b86e261c17a39fdd95351de07ce5f704e00","save_sha256":"83d25dcbbb192ee016994fb9199f6eba5f51a519d103e74e92d12bc6457f89c6"},
-    {"id":"spain","rom_sha1":"cc846d9c833e6fed09360001dc0a8a4597cf8bed","rom_sha256":"9a29fbe1f0c56ceb780bce42a60fd95c457ef85bffdec8f561e8993fa56641af","save_sha1":"ef835aecaa6ce1e1c30cd80796294e166b70a71a","save_sha256":"a19f32a1f4684c4ebace4f61648af3e2815cf4fb4334e22d1d1b1d5dbb1067d8"}
+    {"id":"japan_v0","rom_sha1":"d4b69131e95d62caa89f6bee505b4d6d891a129e","rom_sha256":"059838aba6685170ffd3f825d3e2d323539483bca694b7376511c252ca51111c","save_sha1":"56d496b7a10fbe4ae271c0a148a49d8bcdde3818","save_sha256":"6d14cf335e8b319d39b54fefd1e4f77451843ab68e429b5ddb856cca84c8cfa0"},
+    {"id":"japan_rev_a","rom_sha1":"57113720a8e2caf8dbb9cba874756d9131f9628b","rom_sha256":"1f7b480a6e0a7e246f24e650c0dd6a992325eae1634f46933c8e8d35e5ca4534","save_sha1":"95521e6430c204571aa0e4f7b792aa871a650679","save_sha256":"de739b81607e3826f1959970f59a4c688c3c90d0c32d037d0e56cea5de569487"},
+    {"id":"korea","rom_sha1":"d61539df678d6617b05314a5256ba5f1ad574dad","rom_sha256":"623134e3f36f5bc61359dc2e6e3dc9de782243247849937d096242ebb0c2848c","save_sha1":"f74744f282bd647509a87d899a95717982708331","save_sha256":"81f51d6c0844fe21c8ef306b314b5402f432555cdffca5842a717ad6b83c4a91"},
+    {"id":"usa_europe","rom_sha1":"c9895c5b33e57d74697f3a47638cd8918e7d3a36","rom_sha256":"bb0fa00e61d2f8c3e43f0f00f3bf98769a2093d5824a3c25ecd7d178dce707c7","save_sha1":"5b77b4376cae80a4f8f3b2975fa99701b4d603d7","save_sha256":"8756b2dc8f30e5a5eeb073b201fb344c7f8573ead0e582e5e1d26f701d4f3706"},
+    {"id":"germany","rom_sha1":"02d5af6aad540402b1c1dd303932a969225b5c59","rom_sha256":"8062d2ba7a63577b7c40939afa44ba0e29598b42bb8d584d13797a782cc5e343","save_sha1":"aa95ab1e63d0c9f9ec5eca95819a656c05ca1d62","save_sha256":"c2dc258991d4167efc97790ceb3c2b2d615589c2818c3d10e7fb1fa45ed1d986"},
+    {"id":"france","rom_sha1":"8041b3ab3bd3e6b5a0ad56aea0e4fe9f424ae4d0","rom_sha256":"7abb81a126f638df0db8f6176d1a64985eebb05ac408557c20f4f017562f8b6f","save_sha1":"d160835e31db6e436e480cdbf9b56f519cafb085","save_sha256":"9045df43749045d493b9e00b740c96a0504d920b40b90c7519ad3a670701c02a"},
+    {"id":"italy","rom_sha1":"a8eefe69876e6cea495f7a687980b0126ee71d5a","rom_sha256":"f6155774a5186624da1b2ecd2f8f896731cb62c854f7b4bc9d2da3a4e8ef0403","save_sha1":"b48d91e5a28d1d9a600eadf0bf77632619e338fe","save_sha256":"1d56d6f99e4271662983931e68e7757b3eec0b6022ac70cc32e92d5537e664e0"},
+    {"id":"spain","rom_sha1":"571af9b171580e4edbb17b8598e7ed1f2139bd05","rom_sha256":"c5fb7fd9b499576315561e71e448d1da0e3102af5030a74d692fcf0b937264f2","save_sha1":"ea680de93f66b9a202b6586c48fb46b9bd70b0e7","save_sha256":"e3ed87f397398a755ca6ce08f4cb9a67dd93f2cc4a95345c13ee7b5774091df2"}
   ]
 }

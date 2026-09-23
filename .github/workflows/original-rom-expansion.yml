@@ -6,14 +6,21 @@ on:
     paths:
       - "config/original_rom_expansion.json"
       - "research/gold_release_matrix.json"
+      - "research/legacy_id_path_matrix.json"
+      - "research/mbc30_expansion_validation.json"
+      - "docs/LEGACY_ID_EXPANSION_STAGE1.md"
       - "tools/expand_original_gold.py"
+      - "tools/census_legacy_id_paths.py"
       - "tools/validate_original_rom_expansion.py"
       - ".github/workflows/original-rom-expansion.yml"
   pull_request:
     paths:
       - "config/original_rom_expansion.json"
       - "research/gold_release_matrix.json"
+      - "research/legacy_id_path_matrix.json"
+      - "research/mbc30_expansion_validation.json"
       - "tools/expand_original_gold.py"
+      - "tools/census_legacy_id_paths.py"
       - "tools/validate_original_rom_expansion.py"
   workflow_dispatch:
 
@@ -22,7 +29,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Validate metadata
+      - name: Validate committed expansion evidence
         run: python tools/validate_original_rom_expansion.py
       - name: Compile tools
-        run: python -m py_compile tools/expand_original_gold.py tools/validate_original_rom_expansion.py
+        run: python -m py_compile tools/expand_original_gold.py tools/census_legacy_id_paths.py tools/validate_original_rom_expansion.py

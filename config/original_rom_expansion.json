@@ -1,5 +1,5 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "project": "GOLD",
   "scope": "original-gbc-rom",
   "target_generation": "10+",
@@ -18,6 +18,32 @@
     "rtc_preserved": true,
     "padding_byte": 255
   },
+  "stage1": {
+    "status": "registry-seed-and-save-v2-layout-implemented",
+    "legacy_id_path_matrix": "research/legacy_id_path_matrix.json",
+    "registry_seed": {
+      "bank": 128,
+      "physical_offset": 2097152,
+      "magic": "GOLDREG",
+      "master_id_bits": 16,
+      "tables": [
+        {"type": "species", "source": "BaseData", "legacy_entries": 251, "entry_size": 32},
+        {"type": "move", "source": "Moves", "legacy_entries": 251, "entry_size": 7},
+        {"type": "item", "source": "ItemAttributes", "legacy_entries": 256, "entry_size": 7}
+      ]
+    },
+    "save_v2": {
+      "magic": "GOLDV2",
+      "format_version": 2,
+      "legacy_sram_banks": [0,1,2,3],
+      "extension_sram_banks": [4,5,6,7],
+      "mon_slots": 288,
+      "mon_high_bytes_per_slot": 6,
+      "mon_high_payload_bytes": 1728,
+      "inventory_high_payload_bytes": 107,
+      "crc": "CRC16-CCITT"
+    }
+  },
   "logical_ids": {
     "bits": 16,
     "max": 65535,
@@ -34,24 +60,10 @@
     "resource": 16,
     "feature": 16
   },
-  "save_extension": {
-    "legacy_sram_banks": [0, 1, 2, 3],
-    "extension_sram_banks": [4, 5, 6, 7],
-    "extension_bytes": 32768,
-    "rtc_trailer_is_not_sram": true,
-    "format": "GOLD_SAVE_V2"
-  },
   "banking": {
     "measured_rom_bank_switch_offset": 16,
     "measured_rom_bank_switch_signature_hex": "e09fea0020c9",
     "bank_number_width": 8,
     "mbc30_new_rom_bank_range": "0x80..0xFF"
-  },
-  "future_mapper": {
-    "mbc5_8m": {
-      "rom_bytes": 8388608,
-      "status": "not-enabled",
-      "reason": "MBC5 has larger ROM capacity but no MBC3 RTC; requires a separate RTC replacement and 9-bit bank API before use"
-    }
   }
 }
