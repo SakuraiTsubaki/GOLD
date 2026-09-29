@@ -2,70 +2,73 @@
 
 This stage continues directly from the 4 MiB ROM / 64 KiB SRAM expansion and is based on all eight supplied original Gold ROM/SAV pairs.
 
-## What the ROM census proved
+## Verified common data
 
-The legacy persistent Pokémon record is 32 bytes and stores the extensible identities as single bytes:
+The persistent Pokémon record stores the extensible identities as single bytes:
 
-\`\`\`text
+```text
 +0 species   u8
 +1 item      u8
 +2 move 1    u8
 +3 move 2    u8
 +4 move 3    u8
 +5 move 4    u8
-\`\`\`
+```
 
-The eight releases have different physical addresses, but the three core data tables are byte-identical across every release:
+The eight releases use different physical addresses, but BaseData, Moves and ItemAttributes are byte-identical across every release. Their shared SHA-256 values and all measured direct references are committed in `research/legacy_id_path_matrix.json`.
 
-| Table | Legacy entries | Entry size | Shared SHA-256 |
-| --- | ---: | ---: | --- |
-| BaseData | 251 | 32 | \`dccd0f065a1ccba8ee1a1b7dbee960574499262a2739f46f67fa2f7e686654ac\` |
-| Moves | 251 | 7 | \`e84da1c005921f4352d9bbd83bd5a5885a12b0bbdcfd9ddc14c8ceb50c42670e\` |
-| ItemAttributes | 256 | 7 | \`34ef5e76d33d6a92dfc85d55afbefc9bedd5d79c5de4feac1b5001f1d14a74d5\` |
+## GOLDREG
 
-\`research/legacy_id_path_matrix.json\` records, for every release, the exact \`GetBaseData\` and \`GetItemAttr\` offsets, table bank/address/physical offset, and every direct \`LD HL, table+field\` reference found by the binary census. Moves have 22 direct table references in seven releases and 23 in Korea; the BaseData and item direct-reference counts vary by localization.
+ROM bank `$80` contains a versioned `GOLDREG` header/directory plus the verified legacy tables.
 
-## GOLDREG ROM registry seed
+```text
+$80:4000  GOLDREG header
+$80:4040  registry directory
+$80:4100  BaseData       (251 x 32)
+$80:6060  Moves          (251 x 7)
+$80:673D  ItemAttributes (256 x 7)
+```
 
-Stage 1 no longer leaves all new ROM banks as padding. \`tools/expand_original_gold.py\` writes a registry seed into ROM bank \`$80\` (physical offset \`0x200000\`).
+The directory declares 16-bit master-ID namespaces. Original IDs are not renumbered.
 
-\`\`\`text
-bank $80
-+0000 GOLDREG header
-+0040 registry directory
-+0100 legacy BaseData copy
-      legacy Moves copy
-      legacy ItemAttributes copy
-\`\`\`
+## Central lookup hooks — implemented
 
-The directory marks each registry as a 16-bit master-ID namespace. The legacy copies are the verified common starting dataset; later records append in expanded banks instead of renumbering the original 1..251/255 identities.
+The ROM transformer now patches both central lookup functions in all eight releases.
 
-## GOLD_SAVE_V2 high-byte sidecar
+**GetBaseData**
+- table bank immediate: `$14 -> $80`
+- table base address: release-specific original address -> `$4100`
 
-The original 32 KiB SRAM in banks 0..3 remains byte-exact. Banks 4..7 contain the versioned extension.
+**GetItemAttr**
+- table bank immediate: `$01 -> $80`
+- table base address: release-specific original address -> `$673D`
 
-Bank 4 begins with a \`GOLDV2\` header and directory. The first two blocks are:
+Every patch is guarded by an exact routine signature and immediate-value precondition. An unknown or altered ROM is rejected rather than patched.
 
-1. \`MON_ID_HIGH\`: 288 logical persistent-mon slots × 6 bytes = 1,728 bytes. Per slot: species high byte, held-item high byte, move1..move4 high bytes.
-2. \`INVENTORY_ITEM_HIGH\`: 107 bytes for the 20 item slots, 50 PC-item slots, 12 ball slots, and 25 key-item slots.
+This slice deliberately preserves the original 8-bit ID behavior. It proves that normal species base-data and item-attribute reads can run from expanded ROM bank `$80` before the high byte is enabled. The transformed tables were compared against the original entries on all eight project ROMs before the output hashes were recorded in `research/legacy_lookup_hook_profiles.json`.
 
-For an original save every high byte is zero, so the canonical identity is initially identical to the original 8-bit ID:
+## GOLD_SAVE_V2
 
-\`\`\`text
+Original SRAM banks 0..3 remain byte-exact. Banks 4..7 contain the versioned extension.
+
+The first blocks are:
+
+1. `MON_ID_HIGH`: 288 persistent-mon slots × 6 bytes = 1,728 bytes. Per slot: species high byte, held-item high byte, move1..move4 high bytes.
+2. `INVENTORY_ITEM_HIGH`: 107 bytes for 20 item slots, 50 PC-item slots, 12 ball slots and 25 key-item slots.
+
+For an original save all high bytes begin at zero:
+
+```text
 canonical_id = legacy_low_byte | (extension_high_byte << 8)
-\`\`\`
+```
 
-The 288 mon slots cover the larger localized PC capacity (280) plus party (6) and daycare (2). Japanese PC storage uses 270 of those PC slots and leaves the remaining ten reserved.
+## Current boundary / next slice
 
-Each extension block and header is protected with CRC-16/CCITT. The 44-byte emulator RTC trailer remains outside SRAM and is moved intact behind the expanded 64 KiB SRAM image.
+The following is **not yet claimed complete**:
 
-## Next hook slice
+- the 16-bit high byte is not yet consumed by GetBaseData/GetItemAttr;
+- direct Moves lookup sites still reference the legacy Moves table;
+- party/box/daycare copy paths do not yet move the six high bytes with each mon;
+- inventory high-byte slots are allocated but not yet connected to bag/PC operations.
 
-The storage is now present, but the original execution paths still read 8-bit IDs. The next binary-patch slice is therefore:
-
-- add 16-bit current Species/Move/Item shadow accessors;
-- hook \`GetBaseData\` in all eight release profiles to \`GOLDREG\`;
-- replace/direct the 22/23 \`Moves\` references through the extended move accessor;
-- hook \`GetItemAttr\` and the remaining direct ItemAttributes references;
-- update mon copy/move/save paths so the six high bytes move with the corresponding legacy mon slot;
-- add >255 round-trip tests before adding any later-generation dataset.
+The next implementation slice is the Moves path classifier/hooker across all eight releases, followed by the mon/save synchronization hooks and >255 round-trip tests.

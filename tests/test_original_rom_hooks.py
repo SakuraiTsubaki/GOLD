@@ -1,0 +1,39 @@
+import unittest
+
+from tools import expand_original_gold as gold
+
+
+class LookupHookTests(unittest.TestCase):
+    def test_central_lookup_patch_offsets(self):
+        data = bytearray(b"\x00" * 0x400)
+        base = 0x40
+        item = 0x180
+
+        base_bytes = bytes([
+            0xC5, 0xD5, 0xE5, 0xF0, 0x9F, 0xF5, 0x3E, 0x14, 0xD7,
+            0xFA, 0x60, 0xCE, 0xFE, 0xFD, 0x28, 0x15, 0x3D, 0x01,
+            0x20, 0x00, 0x21, 0x0B, 0x5B, 0xCD, 0xA3, 0x31, 0x11,
+            0x20, 0xD1, 0x01, 0x20, 0x00, 0xCD, 0x1A, 0x31,
+        ])
+        item_bytes = bytes([
+            0xE5, 0xC5, 0x21, 0xA0, 0x68, 0x4F, 0x06, 0x00, 0x09,
+            0xAF, 0xEA, 0x3F, 0xD0, 0xFA, 0x02, 0xD0, 0x3D, 0x4F,
+            0x3E, 0x07, 0xCD, 0xA3, 0x31, 0x3E, 0x01, 0xCD, 0x28,
+            0x31, 0xC1, 0xE1, 0xC9,
+        ])
+        data[base:base + len(base_bytes)] = base_bytes
+        data[item:item + len(item_bytes)] = item_bytes
+
+        original = bytes(data)
+        report = gold.patch_legacy_lookup_hooks(data, original)
+
+        self.assertEqual(data[base + 7], 0x80)
+        self.assertEqual(data[base + 21:base + 23], b"\x00\x41")
+        self.assertEqual(data[item + 3:item + 5], b"\x3D\x67")
+        self.assertEqual(data[item + 24], 0x80)
+        self.assertEqual(report["get_base_data"]["original_address"], 0x5B0B)
+        self.assertEqual(report["get_item_attr"]["original_address"], 0x68A0)
+
+
+if __name__ == "__main__":
+    unittest.main()

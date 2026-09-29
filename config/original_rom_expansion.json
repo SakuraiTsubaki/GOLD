@@ -1,5 +1,5 @@
 {
-  "schema_version": 2,
+  "schema_version": 3,
   "project": "GOLD",
   "scope": "original-gbc-rom",
   "target_generation": "10+",
@@ -19,18 +19,27 @@
     "padding_byte": 255
   },
   "stage1": {
-    "status": "registry-seed-and-save-v2-layout-implemented",
+    "status": "central-species-and-item-lookups-running-from-goldreg",
     "legacy_id_path_matrix": "research/legacy_id_path_matrix.json",
+    "lookup_hook_profiles": "research/legacy_lookup_hook_profiles.json",
     "registry_seed": {
       "bank": 128,
       "physical_offset": 2097152,
       "magic": "GOLDREG",
       "master_id_bits": 16,
+      "base_data_address": 16640,
+      "moves_address": 24672,
+      "item_attributes_address": 26429,
       "tables": [
         {"type": "species", "source": "BaseData", "legacy_entries": 251, "entry_size": 32},
         {"type": "move", "source": "Moves", "legacy_entries": 251, "entry_size": 7},
         {"type": "item", "source": "ItemAttributes", "legacy_entries": 256, "entry_size": 7}
       ]
+    },
+    "lookup_hooks": {
+      "GetBaseData": "implemented-all-8",
+      "GetItemAttr": "implemented-all-8",
+      "Moves_direct_paths": "pending-classification-and-hooking"
     },
     "save_v2": {
       "magic": "GOLDV2",
