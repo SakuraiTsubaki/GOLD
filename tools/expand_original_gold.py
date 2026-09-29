@@ -463,6 +463,141 @@ def verify_registry_legacy_parity(
             raise ValueError(f"ItemAttributes parity failed for item {item}")
 
 
+
+def bank_addr(physical: int) -> tuple[int, int]:
+    return physical // 0x4000, 0x4000 + (physical % 0x4000)
+
+
+def cpu_addr_to_phys(current_bank: int, address: int) -> int:
+    if address < 0x4000:
+        return address
+    return current_bank * 0x4000 + (address - 0x4000)
+
+
+def ld_hl_refs(data: bytes, address: int, width: int) -> list[tuple[int, int]]:
+    refs = []
+    for field_offset in range(width):
+        target = address + field_offset
+        signature = bytes((0x21, target & 0xFF, target >> 8))
+        pos = 0
+        while True:
+            hit = data.find(signature, pos)
+            if hit < 0:
+                break
+            refs.append((hit, field_offset))
+            pos = hit + 1
+    return sorted(refs)
+
+
+def classify_move_refs(original: bytes) -> tuple[int, list[dict], list[dict], list[int]]:
+    move_phys = original.find(MOVE_PREFIX)
+    if move_phys < 0:
+        raise ValueError("Moves table not found")
+    _, move_address = bank_addr(move_phys)
+    refs = ld_hl_refs(original, move_address, 7)
+
+    real_refs = []
+    excluded = []
+    bank_offsets = set()
+
+    for offset, field_offset in refs:
+        window = original[offset:offset + 48]
+
+        # Korean localization has one byte-pattern collision: the three bytes that
+        # equal Moves+MOVE_POWER are actually a FarCall function address.
+        if len(window) >= 6 and window[3] == 0x3E and window[5] == 0xCF:
+            excluded.append({
+                "offset": offset,
+                "field_offset": field_offset,
+                "reason": "farcall_function_pointer",
+            })
+            continue
+
+        direct_bank_offsets = []
+        for index in range(3, min(32, len(window) - 1)):
+            if window[index] == 0x3E and window[index + 1] == 0x10:
+                direct_bank_offsets.append(offset + index + 1)
+
+        if direct_bank_offsets:
+            real_refs.append({
+                "offset": offset,
+                "field_offset": field_offset,
+                "kind": "direct",
+            })
+            bank_offsets.update(direct_bank_offsets)
+            continue
+
+        if len(window) >= 6 and window[3] == 0xCD:
+            current_bank = offset // 0x4000
+            helper_address = window[4] | (window[5] << 8)
+            helper_phys = cpu_addr_to_phys(current_bank, helper_address)
+            helper = original[helper_phys:helper_phys + 32]
+            helper_bank_offsets = []
+
+            for index in range(0, min(20, len(helper) - 1)):
+                if helper[index] == 0x3E and helper[index + 1] == 0x10:
+                    helper_bank_offsets.append(helper_phys + index + 1)
+
+            for index in range(0, min(16, len(helper) - 2)):
+                if helper[index] != 0xCD:
+                    continue
+                nested_address = helper[index + 1] | (helper[index + 2] << 8)
+                nested_phys = cpu_addr_to_phys(current_bank, nested_address)
+                nested = original[nested_phys:nested_phys + 12]
+                for nested_index in range(0, min(8, len(nested) - 1)):
+                    if nested[nested_index] == 0x3E and nested[nested_index + 1] == 0x10:
+                        helper_bank_offsets.append(nested_phys + nested_index + 1)
+
+            if helper_bank_offsets:
+                real_refs.append({
+                    "offset": offset,
+                    "field_offset": field_offset,
+                    "kind": "helper",
+                })
+                bank_offsets.update(helper_bank_offsets)
+                continue
+
+        raise ValueError(f"unclassified Moves reference at {offset:#x}")
+
+    if len(real_refs) != 22:
+        raise ValueError(f"expected 22 real Moves references, found {len(real_refs)}")
+    if len(bank_offsets) != 15:
+        raise ValueError(f"expected 15 Moves bank immediates, found {len(bank_offsets)}")
+
+    return move_address, real_refs, excluded, sorted(bank_offsets)
+
+
+def patch_move_lookup_hooks(out: bytearray, original: bytes) -> dict:
+    original_move_address, refs, excluded, bank_offsets = classify_move_refs(original)
+
+    for ref in refs:
+        offset = ref["offset"]
+        field_offset = ref["field_offset"]
+        if out[offset] != 0x21:
+            raise ValueError(f"Moves pointer opcode precondition failed at {offset:#x}")
+        current_address = out[offset + 1] | (out[offset + 2] << 8)
+        if current_address != original_move_address + field_offset:
+            raise ValueError(f"Moves pointer precondition failed at {offset:#x}")
+        target = REGISTRY_MOVES_ADDR + field_offset
+        out[offset + 1] = target & 0xFF
+        out[offset + 2] = target >> 8
+
+    for offset in bank_offsets:
+        if out[offset - 1] != 0x3E or out[offset] != 0x10:
+            raise ValueError(f"Moves bank precondition failed at {offset:#x}")
+        out[offset] = REGISTRY_BANK
+
+    return {
+        "target_bank": REGISTRY_BANK,
+        "target_address": REGISTRY_MOVES_ADDR,
+        "pointer_count": len(refs),
+        "bank_immediate_count": len(bank_offsets),
+        "pointer_offsets": [ref["offset"] for ref in refs],
+        "bank_immediate_offsets": bank_offsets,
+        "excluded_candidates": excluded,
+    }
+
+
 def expand_rom(data: bytes) -> tuple[bytes, dict]:
     profile = identify_rom(data)
 
@@ -493,6 +628,7 @@ def expand_rom(data: bytes) -> tuple[bytes, dict]:
     out[REGISTRY_PHYS:REGISTRY_PHYS + 0x4000] = registry
 
     lookup_hooks = patch_legacy_lookup_hooks(out, data)
+    move_hooks = patch_move_lookup_hooks(out, data)
 
     out[0x147] = CART_MBC3_RTC_RAM_BATTERY
     out[0x148] = ROM_SIZE_CODE_4MIB
@@ -515,6 +651,7 @@ def expand_rom(data: bytes) -> tuple[bytes, dict]:
         "registry_physical_offset": REGISTRY_PHYS,
         "registry_magic": REGISTRY_MAGIC.decode("ascii", "ignore").rstrip("\0"),
         "lookup_hooks": lookup_hooks,
+        "move_hooks": move_hooks,
         "applied_release_patches": applied,
     }
 

@@ -1,5 +1,5 @@
 {
-  "schema_version": 3,
+  "schema_version": 4,
   "project": "GOLD",
   "scope": "original-gbc-rom",
   "target_generation": "10+",
@@ -19,7 +19,7 @@
     "padding_byte": 255
   },
   "stage1": {
-    "status": "central-species-and-item-lookups-running-from-goldreg",
+    "status": "species-move-item-legacy-lookups-running-from-goldreg",
     "legacy_id_path_matrix": "research/legacy_id_path_matrix.json",
     "lookup_hook_profiles": "research/legacy_lookup_hook_profiles.json",
     "registry_seed": {
@@ -31,27 +31,54 @@
       "moves_address": 24672,
       "item_attributes_address": 26429,
       "tables": [
-        {"type": "species", "source": "BaseData", "legacy_entries": 251, "entry_size": 32},
-        {"type": "move", "source": "Moves", "legacy_entries": 251, "entry_size": 7},
-        {"type": "item", "source": "ItemAttributes", "legacy_entries": 256, "entry_size": 7}
+        {
+          "type": "species",
+          "source": "BaseData",
+          "legacy_entries": 251,
+          "entry_size": 32
+        },
+        {
+          "type": "move",
+          "source": "Moves",
+          "legacy_entries": 251,
+          "entry_size": 7
+        },
+        {
+          "type": "item",
+          "source": "ItemAttributes",
+          "legacy_entries": 256,
+          "entry_size": 7
+        }
       ]
     },
     "lookup_hooks": {
       "GetBaseData": "implemented-all-8",
       "GetItemAttr": "implemented-all-8",
-      "Moves_direct_paths": "pending-classification-and-hooking"
+      "Moves_direct_paths": "implemented-all-8-22-paths",
+      "Korea_false_positive": "0x3F3B6 excluded: FarCall function pointer, not Moves data"
     },
     "save_v2": {
       "magic": "GOLDV2",
       "format_version": 2,
-      "legacy_sram_banks": [0,1,2,3],
-      "extension_sram_banks": [4,5,6,7],
+      "legacy_sram_banks": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "extension_sram_banks": [
+        4,
+        5,
+        6,
+        7
+      ],
       "mon_slots": 288,
       "mon_high_bytes_per_slot": 6,
       "mon_high_payload_bytes": 1728,
       "inventory_high_payload_bytes": 107,
       "crc": "CRC16-CCITT"
-    }
+    },
+    "move_hook_profiles": "research/legacy_move_hook_profiles.json"
   },
   "logical_ids": {
     "bits": 16,

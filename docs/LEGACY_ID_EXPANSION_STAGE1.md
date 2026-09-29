@@ -47,6 +47,20 @@ Every patch is guarded by an exact routine signature and immediate-value precond
 
 This slice deliberately preserves the original 8-bit ID behavior. It proves that normal species base-data and item-attribute reads can run from expanded ROM bank `$80` before the high byte is enabled. The transformed tables were compared against the original entries on all eight project ROMs before the output hashes were recorded in `research/legacy_lookup_hook_profiles.json`.
 
+## Moves lookup hooks — implemented
+
+The binary census found 22 real direct/helper-based Moves lookup paths in every release.
+Each real `LD HL, Moves+field` pointer is redirected to `$80:$6060+field`, and the
+15 associated `BANK(Moves)=$10` immediates are changed to `$80`.
+
+Korea initially produces 23 byte-pattern candidates. The extra candidate at physical
+offset `0x3F3B6` is intentionally excluded: the bytes are followed by
+`LD A,$0E / RST FarCall`, so the matching word is a function address in bank $0E,
+not a Moves data pointer.
+
+The exact 22 pointer offsets, 15 bank-immediate offsets and transformed ROM hashes for
+all eight releases are recorded in `research/legacy_move_hook_profiles.json`.
+
 ## GOLD_SAVE_V2
 
 Original SRAM banks 0..3 remain byte-exact. Banks 4..7 contain the versioned extension.
@@ -67,8 +81,8 @@ canonical_id = legacy_low_byte | (extension_high_byte << 8)
 The following is **not yet claimed complete**:
 
 - the 16-bit high byte is not yet consumed by GetBaseData/GetItemAttr;
-- direct Moves lookup sites still reference the legacy Moves table;
+- the legacy Moves lookup sites now read the GOLDREG Moves mirror, but still consume only 8-bit move IDs;
 - party/box/daycare copy paths do not yet move the six high bytes with each mon;
 - inventory high-byte slots are allocated but not yet connected to bag/PC operations.
 
-The next implementation slice is the Moves path classifier/hooker across all eight releases, followed by the mon/save synchronization hooks and >255 round-trip tests.
+The next implementation slice is the mon/save high-byte synchronization layer, followed by enabling 16-bit current-ID accessors and >255 round-trip tests.

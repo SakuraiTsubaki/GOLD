@@ -16,6 +16,7 @@ def main() -> int:
     releases = json.loads((ROOT / "research/gold_release_matrix.json").read_text())
     paths = json.loads((ROOT / "research/legacy_id_path_matrix.json").read_text())
     hooks = json.loads((ROOT / "research/legacy_lookup_hook_profiles.json").read_text())
+    move_hooks = json.loads((ROOT / "research/legacy_move_hook_profiles.json").read_text())
     validation = json.loads((ROOT / "research/mbc30_expansion_validation.json").read_text())
 
     assert config["scope"] == "original-gbc-rom"
@@ -35,6 +36,7 @@ def main() -> int:
     assert {r["id"] for r in releases["releases"]} == EXPECTED
     assert {r["id"] for r in paths["releases"]} == EXPECTED
     assert {r["id"] for r in hooks["releases"]} == EXPECTED
+    assert {r["id"] for r in move_hooks["releases"]} == EXPECTED
 
     assert len(paths["shared_table_hashes"]["base_data"]) == 1
     assert len(paths["shared_table_hashes"]["moves"]) == 1
@@ -60,17 +62,26 @@ def main() -> int:
         assert len(hook["output_sha1"]) == 40
         assert len(hook["output_sha256"]) == 64
 
+    for hook in move_hooks["releases"]:
+        assert hook["move_refs_patched"] == 22
+        assert hook["move_bank_immediates_patched"] == 15
+        if hook["id"] == "korea":
+            assert len(hook["excluded_candidates"]) == 1
+            assert hook["excluded_candidates"][0]["reason"] == "farcall_function_pointer"
+        else:
+            assert hook["excluded_candidates"] == []
+
     assert len(validation["results"]) == 8
     assert validation["rom_transform"]["registry_bank"] == 0x80
     assert validation["rom_transform"]["central_lookup_hooks"] == [
-        "GetBaseData", "GetItemAttr"
+        "GetBaseData", "GetItemAttr", "MovesDirectPaths"
     ]
     assert validation["save_transform"]["mon_id_high_payload_bytes"] == 1728
 
     print("GOLD original-ROM Gen10 expansion: OK")
     print("release profiles: 8/8")
-    print("Stage 1 central lookup hooks: GetBaseData + GetItemAttr -> GOLDREG")
-    print("Moves direct-path hook: pending")
+    print("Stage 1 legacy lookup hooks: Species + Moves + Items -> GOLDREG")
+    print("Moves paths: 22/22 per release; Korea FarCall collision excluded")
     return 0
 
 

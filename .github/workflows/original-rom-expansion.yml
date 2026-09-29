@@ -8,6 +8,7 @@ on:
       - "research/gold_release_matrix.json"
       - "research/legacy_id_path_matrix.json"
       - "research/legacy_lookup_hook_profiles.json"
+      - "research/legacy_move_hook_profiles.json"
       - "research/mbc30_expansion_validation.json"
       - "docs/LEGACY_ID_EXPANSION_STAGE1.md"
       - "tools/expand_original_gold.py"
